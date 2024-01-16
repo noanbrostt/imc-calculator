@@ -6,10 +6,11 @@ import {
     Pressable,
     TouchableOpacity,
     Vibration,
-    Keyboard 
+    Keyboard
 } from "react-native";
 import ResultImc from "./ResultImc";
 import styles from "./style";
+import { FlatList } from "react-native-web";
 
 export default function Form() {
 
@@ -20,15 +21,14 @@ export default function Form() {
     const [textButton, setTextButton] = useState("Calcular")
     const [errorMessageAltura, setErrorMessageAltura] = useState(null)
     const [errorMessagePeso, setErrorMessagePeso] = useState(null)
+    const [imcList, setImcList] = useState([])
 
     function imcCalculator() {
         let heightFormat = height.replace(',', '.')
         let weightFormat = weight.replace(',', '.')
-
-        // if ((heightFormat / weightFormat) == NaN){
-        //     return setImc(null)
-        // }
-        return setImc((weightFormat/(heightFormat*heightFormat)).toFixed(2))
+        let totalImc = (weightFormat/(heightFormat*heightFormat)).toFixed(2)
+        setImcList ((arr) => [...arr, {id: new Date().getTime(), imc: totalImc}])
+        setImc(totalImc)
     }
 
     function validationImc() {
@@ -40,7 +40,6 @@ export default function Form() {
             setTextButton("Calcular novamente")
             setErrorMessageAltura(null)
             setErrorMessagePeso(null)
-            return
         } else {
             Vibration.vibrate()
             if (textButton != "Calcular novamente") {
@@ -87,19 +86,6 @@ export default function Form() {
                     placeholder="Ex: 72.750"
                     inputMode="numeric"
                 />
-
-                {/* <Pressable
-                    onPress={() => validationImc()}
-                >
-                    <Text>{textButton}</Text>
-                </Pressable> */}
-                <TouchableOpacity
-                    style={styles.formButton}
-                    onPress={() => validationImc()}
-                >
-                    <Text style={styles.formTextButton}>{textButton}</Text>
-                </TouchableOpacity>
-
             </Pressable>
             :
             <View style={styles.exhibitionResultImc}>
@@ -107,14 +93,26 @@ export default function Form() {
                     resultImc={imc}
                     messageResultImc={messageImc}
                 />
-                <TouchableOpacity
-                    style={styles.formButton}
-                    onPress={() => validationImc()}
-                >
-                    <Text style={styles.formTextButton}>{textButton}</Text>
-                </TouchableOpacity>
             </View>
             }
+            <TouchableOpacity
+                style={styles.formButton}
+                onPress={() => validationImc()}
+            >
+                <Text style={styles.formTextButton}>{textButton}</Text>
+            </TouchableOpacity>
+            <FlatList
+                style={styles.listImcs}
+                data={[...imcList].reverse()}
+                renderItem={({item}) => {
+                    return(
+                        <Text style={styles.resultImcItem}>
+                            {item.imc}
+                        </Text>
+                    )
+                }}
+                keyExtractor={item => item.id}
+            />
         </View>
 
     )
